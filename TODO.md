@@ -14,30 +14,78 @@ This file tracks pending tasks, future enhancements, and known issues for the Mi
 
 ## Future Enhancements
 
-### Frontend
+### Feature: Contextual Tipping for Registered IP & Verified Creator Badges (Camp Network IP)
+- [ ] **Phase 1: Core Smart Contract & Basic Frontend Integration (Proof of Concept)**
+    - [ ] **Smart Contracts (`web3/`):**
+        - [ ] Modify `Tipping.sol`: `tipNative` to accept `bytes32 _ipId`, update `TipSent` event.
+        - [ ] Deploy updated `Tipping.sol`.
+    - [ ] **Frontend (`frontend/`):**
+        - [ ] Update `Tipping.json` ABI.
+        - [ ] Modify `page.tsx`: Add manual `ipId` input, pass to `writeContract`, update `txStatus`.
+    - [ ] **Testing**: Manually test tipping with an `ipId`.
+- [ ] **Phase 2: `CreatorRegistry.sol` and Frontend IP Display**
+    - [ ] **Smart Contracts (`web3/`):**
+        - [ ] Create and deploy `CreatorRegistry.sol` (for creator IP portfolio & verification).
+    - [ ] **Frontend (`frontend/`):**
+        - [ ] Add `CreatorRegistry.json` ABI.
+        - [ ] New page/section for creators to manage their IP portfolio.
+        - [ ] Modify `page.tsx`/`CreatorProfilePage.tsx`: Fetch/display IP portfolio & verification status.
+    - [ ] **Backend (`backend/` - optional for this phase):**
+        - [ ] Plan/start schema for `creators` and `registered_ips`.
+        - [ ] Plan API endpoint to cache/serve `CreatorRegistry.sol` data.
+    - [ ] **Testing**: Creator registration, IP addition, tipper viewing portfolio and tipping specific IP.
+- [ ] **Phase 3: Backend Integration & Polish**
+    - [ ] **Backend (`backend/`):**
+        - [ ] Implement caching layer for `CreatorRegistry.sol` data.
+        - [ ] Implement admin functionality for verification if off-chain.
+        - [ ] Enhance `tips` table for `target_ip_id`.
+        - [ ] (Stretch) Event listener service for `TipSent` & `CreatorRegistry` events.
+    - [ ] **Frontend (`frontend/`):**
+        - [ ] Refine UI/UX for IP display and tipping.
+
+### Feature: Enhanced Creator Profiles with Linked Socials (using @campnetwork/sdk)
+- [ ] **Phase 1: Basic SDK Integration & Current User Linking**
+    - [ ] **Frontend (`frontend/`):**
+        - [ ] Install `@campnetwork/sdk`.
+        - [ ] Wrap application in `CampProvider` (`providers.tsx`), render `<CampModal />` (`layout.tsx`).
+        - [ ] Create `/my-socials` page for authenticated user to link their Twitter/Spotify using Camp SDK hooks/components.
+        - [ ] Display current user's linked social status on `/my-socials`.
+    - [ ] **Testing**: Current user wallet connection, navigation to `/my-socials`, linking/unlinking socials, UI updates correctly.
+- [ ] **Phase 2: Displaying Linked Socials on Public Profiles (Requires Backend Cache Strategy)**
+    - [ ] **Backend (`backend/`):**
+        - [ ] Extend `creators` table schema in Supabase for cached social link status (e.g., `is_twitter_linked_camp`).
+        - [ ] API endpoint for frontend to notify backend of successful social link/unlink by current user (for cache update).
+        - [ ] API endpoint to serve creator profiles including cached social link status.
+    - [ ] **Frontend (`frontend/`):**
+        - [ ] Call backend API to update cache after Camp SDK confirms social link/unlink for current user.
+        - [ ] On public creator profiles, fetch profile data (with social links) from backend API.
+        - [ ] Implement `CreatorSocialBadges.tsx` to display linked socials.
+    - [ ] **Testing**: User A links social, backend cache updates. User B (or unauth) views User A's profile and sees linked social icon.
+
+### Other Frontend Enhancements
 - [ ] **Display Recent Tips**: Fetch and display recent tips (either for the connected user, a specific creator, or globally) by listening to `TipSent` events or querying the contract/backend.
 - [ ] **ERC20 Token Tipping**: Fully implement and test the `tipToken` functionality in the smart contract and add UI for it on the frontend.
     - [ ] UI to select token (if multiple are supported).
     - [ ] Handle ERC20 approvals if necessary.
-- [ ] **Creator Profiles**: If backend supports it, display basic creator profiles.
+- [ ] **Creator Profiles**: If backend supports it, display basic creator profiles (expanded beyond just linked socials/IP).
 - [ ] **Leaderboards**: If backend supports it, display tipping leaderboards.
 - [ ] **Dark Mode/Light Mode Toggle**: Implement a manual theme switcher if not relying solely on system preference.
 - [ ] **Wallet Balance Display**: Show the user's CAMP token balance more prominently.
 - [ ] **Transaction History**: Allow users to see their past tipping transactions within the DApp.
 
-### Backend (`backend/`)
+### Other Backend (`backend/`) Enhancements
 - [ ] **Database Schema**: Define and implement Supabase database schema for:
-    - [ ] User profiles (linking wallet addresses to usernames, etc.)
-    - [ ] Creator profiles
-    - [ ] Aggregated tip data
+    - [ ] General User profiles (linking wallet addresses to usernames, etc.)
+    - [ ] Expanded Creator profiles
+    - [ ] Aggregated tip data for analytics
 - [ ] **API Endpoints**: Develop Express API endpoints for:
-    - [ ] Managing user/creator profiles.
+    - [ ] Managing general user/creator profiles.
     - [ ] Storing/retrieving tip data (e.g., a service to listen to `TipSent` events and record them).
     - [ ] Serving data for leaderboards or analytics.
 - [ ] **Authentication/Authorization**: Secure backend APIs, potentially using Supabase Auth.
 - [ ] **Event Listener Service**: Create a service (could be part of the backend or standalone) to listen to `TipSent` events from the smart contract and store them in the Supabase database. This is more robust than relying on the frontend to catch all events.
 
-### Smart Contract (`web3/`)
+### Other Smart Contract (`web3/`) Enhancements
 - [ ] **Contract Upgradability**: Consider making the contract upgradeable (e.g., using OpenZeppelin Upgrades Plugins) for future modifications without changing the address.
 - [ ] **Gas Optimizations**: Review for any potential gas optimizations if the contract becomes complex.
 - [ ] **Batch Tipping**: Allow a user to tip multiple creators in a single transaction.
