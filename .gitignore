@@ -12,3 +12,5 @@ coverage/
 
 # Ignore generated contract address in frontend
 frontend/src/generated/
+
+.cursorrules
