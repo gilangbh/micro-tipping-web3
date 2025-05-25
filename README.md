@@ -7,11 +7,15 @@ This project is a decentralized micro-tipping platform that allows users to send
 The project is divided into three main components:
 
 1.  **`web3/`**: Contains the Solidity smart contract, deployment scripts, and Hardhat configuration for interacting with the Camp Testnet.
-    *   **Smart Contract (`Tipping.sol`)**: Allows users to send tips (native CAMP tokens) to a specific address and logs these tips.
+    *   **Smart Contract (`Tipping.sol`)**: Allows users to send tips (native CAMP tokens) to a specific address. 
+        *   Supports an optional `ipId` (IP Identifier as a `bytes32`) for contextual tipping, allowing tips to be associated with specific registered intellectual property or content items.
+        *   Logs these tips via a `TipSent` event, which includes the sender, recipient, amount, message, timestamp, and the `ipId`.
 2.  **`frontend/`**: A Next.js application that provides the user interface.
-    *   Users can connect their wallets (e.g., MetaMask).
-    *   Input a recipient address and an amount to tip.
-    *   Execute the tip via the smart contract.
+    *   Users can connect their wallets (e.g., MetaMask via RainbowKit).
+    *   Input a recipient address, an amount to tip, an optional message, and an `ipId` for contextual tips.
+    *   Executes the tip via the smart contract.
+    *   Provides input validation for all fields to guide the user.
+    *   Displays transaction status and feedback (e.g., loading spinners, success/error messages).
     *   Displays connected wallet information and the deployed contract address.
 3.  **`backend/`**: A Node.js/Express server using Supabase.
     *   Intended for managing content creator profiles (optional).
@@ -65,7 +69,8 @@ Detailed instructions are in `frontend/README.md`. Key steps:
 *   Navigate to the `frontend` directory.
 *   Create a `.env.local` file with your `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`.
 *   Install dependencies: `npm install`
-*   Ensure `frontend/src/generated/contract-address.json` exists (it's created by the web3 deployment script). If not, run the deployment script first.
+*   Ensure `frontend/src/abi/Tipping.json` is up-to-date with the latest compiled contract.
+*   Ensure `frontend/src/generated/contract-address.json` exists and contains the correct deployed contract address (it's created/updated by the web3 deployment script). If not, run the deployment script first.
 *   Start the development server: `npm run dev` (typically runs on `http://localhost:3000`).
 
 ## Project Structure
@@ -108,6 +113,15 @@ micro-tipping-web3/
 ├── .gitignore
 └── README.md         # This file
 ```
+
+## Current Features
+
+*   **Native Currency Tipping**: Send CAMP tokens on the Camp Testnet.
+*   **Contextual Tipping**: Associate tips with a specific `ipId` (bytes32 IP Identifier).
+*   **Wallet Integration**: Connect Web3 wallets using RainbowKit (MetaMask, WalletConnect, etc.).
+*   **Real-time Feedback**: View transaction status (pending, confirmed, error) and loading states.
+*   **Input Validation**: Client-side checks for recipient address, tip amount, and IP ID format for improved UX.
+*   **Event Emission**: Smart contract emits `TipSent` events detailing each tip, including the `ipId`.
 
 ## Contributing
 

@@ -20,7 +20,8 @@ contract Tipping is Ownable {
         address indexed to,
         uint256 amount,
         string message,
-        uint256 timestamp
+        uint256 timestamp,
+        bytes32 indexed ipId
     );
 
     // Mapping to store tips for each recipient
@@ -44,9 +45,10 @@ contract Tipping is Ownable {
      * @param _recipient The address of the content creator to tip.
      * @param _message An optional message to send with the tip.
      */
-    function tipNative(address payable _recipient, string memory _message) public payable {
+    function tipNative(address payable _recipient, string memory _message, bytes32 _ipId) public payable {
         require(_recipient != address(0), "Cannot tip to the zero address");
         require(msg.value > 0, "Tip amount must be greater than 0");
+        // require(_ipId != bytes32(0), "IP ID must be provided"); // Optional: depending on requirements
 
         // Transfer the native currency
         (bool success, ) = _recipient.call{value: msg.value}("");
@@ -63,8 +65,8 @@ contract Tipping is Ownable {
         tipsReceived[_recipient].push(newTip);
         totalTippedTo[_recipient] += msg.value;
 
-        emit TipSent(msg.sender, _recipient, msg.value, _message, block.timestamp);
-        // console.log("Native tip from %s to %s of %s", msg.sender, _recipient, msg.value);
+        emit TipSent(msg.sender, _recipient, msg.value, _message, block.timestamp, _ipId);
+        // console.log("Native tip from %s to %s of %s for ipId %s", msg.sender, _recipient, msg.value, _ipId);
     }
 
     /**
@@ -95,7 +97,7 @@ contract Tipping is Ownable {
         tipsReceived[_recipient].push(newTip);
         totalTippedTo[_recipient] += _amount; // Assumes token has same decimals as native for simplicity here
 
-        emit TipSent(msg.sender, _recipient, _amount, _message, block.timestamp);
+        emit TipSent(msg.sender, _recipient, _amount, _message, block.timestamp, bytes32(0));
         // console.log("Token tip from %s to %s of %s", msg.sender, _recipient, _amount);
     }
 

@@ -4,25 +4,25 @@ This file tracks pending tasks, future enhancements, and known issues for the Mi
 
 ## Pending Tasks
 
-- [ ] **Test Tipping Thoroughly**: Confirm tips are processed correctly on Camp Testnet, balances update, and events are emitted as expected.
-- [ ] **Frontend UI/UX Polish**: 
-    - [ ] Improve visual feedback during and after transaction submission (e.g., more distinct loading spinners, success/error modals or toasts instead of just text).
-    - [ ] Add input validation for recipient address (e.g., check for valid Ethereum address format).
-    - [ ] Add input validation for amount (e.g., ensure it's a positive number, perhaps check against user's balance though this is complex with gas).
-- [ ] **Error Handling**: Enhance error handling across all parts of the DApp (frontend, backend, smart contract interactions).
-    - [ ] Provide more user-friendly error messages.
+- [v] **Test Tipping Thoroughly**: Confirm tips are processed correctly on Camp Testnet, balances update, and events are emitted as expected.
+- [v] **Frontend UI/UX Polish**: 
+    - [v] Improve visual feedback during and after transaction submission (e.g., more distinct loading spinners, success/error modals or toasts instead of just text).
+    - [v] Add input validation for recipient address (e.g., check for valid Ethereum address format).
+    - [v] Add input validation for amount (e.g., ensure it's a positive number, perhaps check against user's balance though this is complex with gas).
+- [v] **Error Handling**: Enhance error handling across all parts of the DApp (frontend, backend, smart contract interactions).
+    - [v] Provide more user-friendly error messages.
 
 ## Future Enhancements
 
 ### Feature: Contextual Tipping for Registered IP & Verified Creator Badges (Camp Network IP)
-- [ ] **Phase 1: Core Smart Contract & Basic Frontend Integration (Proof of Concept)**
-    - [ ] **Smart Contracts (`web3/`):**
-        - [ ] Modify `Tipping.sol`: `tipNative` to accept `bytes32 _ipId`, update `TipSent` event.
-        - [ ] Deploy updated `Tipping.sol`.
-    - [ ] **Frontend (`frontend/`):**
-        - [ ] Update `Tipping.json` ABI.
-        - [ ] Modify `page.tsx`: Add manual `ipId` input, pass to `writeContract`, update `txStatus`.
-    - [ ] **Testing**: Manually test tipping with an `ipId`.
+- [v] **Phase 1: Core Smart Contract & Basic Frontend Integration (Proof of Concept)**
+    - [v] **Smart Contracts (`web3/`):**
+        - [v] Modify `Tipping.sol`: `tipNative` to accept `bytes32 _ipId`, update `TipSent` event.
+        - [v] Deploy updated `Tipping.sol`.
+    - [v] **Frontend (`frontend/`):**
+        - [v] Update `Tipping.json` ABI.
+        - [v] Modify `page.tsx`: Add manual `ipId` input, pass to `writeContract`, update `txStatus`.
+    - [v] **Testing**: Manually test tipping with an `ipId`.
 - [ ] **Phase 2: `CreatorRegistry.sol` and Frontend IP Display**
     - [ ] **Smart Contracts (`web3/`):**
         - [ ] Create and deploy `CreatorRegistry.sol` (for creator IP portfolio & verification).
