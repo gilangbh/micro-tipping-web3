@@ -18,17 +18,23 @@ const campTestnetChain: Chain = {
   testnet: true,
 };
 
-const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+const walletConnectProjectIdFromEnv = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 
-if (!walletConnectProjectId) {
+// Log the projectId to the server console during startup/build
+console.log("[wagmiConfig] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID from env:", walletConnectProjectIdFromEnv);
+
+if (!walletConnectProjectIdFromEnv) {
   console.warn(
-    'WalletConnect Project ID is not set. Please set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID in .env.local'
+    '[wagmiConfig] WalletConnect Project ID is not set in .env.local. Please set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID.'
   );
+  // Consider if you want to throw an error here in development to make it more obvious
+  // throw new Error("[wagmiConfig] WalletConnect Project ID is essential and not set.");
 }
 
 const config = getDefaultConfig({
   appName: 'Micro-Tipping Platform',
-  projectId: walletConnectProjectId || 'PLACEHOLDER_PROJECT_ID', // Fallback to avoid error if not set, but log warning
+  // Use the variable directly, and handle the undefined case if necessary (though warning is good)
+  projectId: walletConnectProjectIdFromEnv || 'FALLBACK_ID_IF_YOU_MUST_HAVE_ONE_BUT_WARN_HEAVILY', 
   chains: [campTestnetChain],
   ssr: true, // Required for Next.js App Router
 });

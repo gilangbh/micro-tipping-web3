@@ -31,8 +31,20 @@ async function main() {
     fs.mkdirSync(frontendDataPath, { recursive: true });
   }
 
-  fs.writeFileSync(addressFilePath, JSON.stringify({ address: contractAddress }, null, 2));
-  console.log(`Contract address saved to ${addressFilePath}`);
+  let addresses = {};
+  if (fs.existsSync(addressFilePath)) {
+    try {
+      addresses = JSON.parse(fs.readFileSync(addressFilePath, 'utf8'));
+    } catch (e) {
+      console.warn("Could not parse existing contract-address.json, will overwrite:", e);
+      addresses = {}; // Reset if parsing fails
+    }
+  }
+
+  addresses.tippingContractAddress = contractAddress;
+
+  fs.writeFileSync(addressFilePath, JSON.stringify(addresses, null, 2));
+  console.log(`Tipping contract address saved to ${addressFilePath}`);
 
 }
 
