@@ -7,8 +7,8 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'; // Import useConnectMo
 // import { ConnectButton } from '@rainbow-me/rainbowkit'; // Header now handles connect/disconnect UI
 
 import contractAddressData from '@/generated/contract-address.json';
-import tippingAbi from '@/abi/Tipping.json';
-import creatorRegistryAbi from '@/abi/CreatorRegistry.json'; // Import CreatorRegistry ABI
+import tippingAbi from '@/generated/abi/Tipping.json';
+import creatorRegistryAbi from '@/generated/abi/CreatorRegistry.json'; // Import CreatorRegistry ABI
 
 // Import new components
 import Header from '@/components/Header'; // Import Header
@@ -21,6 +21,8 @@ import { useToast } from '@/hooks/use-toast'; // Import useToast
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
+import { useReadContract } from "wagmi";
+import { ethers, ZeroAddress } from "ethers"; // Import ZeroAddress
 
 // Stats Icons (example, replace with actual icons if available or use lucide-react)
 const TotalTipsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><path d="M12 12V6"/></svg>; // Example Zap/Heart mix
@@ -55,8 +57,8 @@ export default function Page() {
   const [txStatus, setTxStatus] = useState('');
   
   // Contract Addresses from generated file
-  const tippingContractReadAddress = contractAddressData.tippingContractAddress as `0x${string}`;
-  const creatorRegistryContractReadAddress = contractAddressData.creatorRegistryAddress as `0x${string}`; // Corrected type assertion
+  const tippingContractReadAddress = contractAddressData.tippingAddress as `0x${string}`;
+  const creatorRegistryContractReadAddress = contractAddressData.creatorRegistryAddress as `0x${string}`;
 
   const { data: hash, error: writeError, isPending: isWritePending, writeContract } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed, error: receiptError } = useWaitForTransactionReceipt({ hash });
@@ -286,10 +288,10 @@ export default function Page() {
 
   // Dummy data for stats and recent tips
   const stats = [
-    { icon: <TotalTipsIcon />, value: 157, label: 'Total Tips', bgColor: 'bg-pink-100', textColor: 'text-pink-700' },
-    { icon: <CampVolumeIcon />, value: '12.45', label: 'CAMP Volume', bgColor: 'bg-indigo-100', textColor: 'text-indigo-700' },
-    { icon: <ActiveCreatorsIcon />, value: 23, label: 'Active Creators', bgColor: 'bg-green-100', textColor: 'text-green-700' },
-    { icon: <AvgTipIcon />, value: '0.079', label: 'Avg Tip (CAMP)', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700' },
+    { icon: <TotalTipsIcon />, value: 157, label: 'Total Tips [TODO]', bgColor: 'bg-pink-100', textColor: 'text-pink-700' },
+    { icon: <CampVolumeIcon />, value: '12.45', label: 'CAMP Volume [TODO]', bgColor: 'bg-indigo-100', textColor: 'text-indigo-700' },
+    { icon: <ActiveCreatorsIcon />, value: 23, label: 'Active Creators [TODO]', bgColor: 'bg-green-100', textColor: 'text-green-700' },
+    { icon: <AvgTipIcon />, value: '0.079', label: 'Avg Tip (CAMP) [TODO]', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700' },
   ];
 
   const dummyRecentTips = [
@@ -420,10 +422,11 @@ export default function Page() {
 
           {/* Right Column: Contract Info & How It Works */}
           <div className="lg:col-span-1 space-y-8 flex flex-col items-center">
-            <ContractInfo 
-              contractAddress={tippingContractReadAddress || '0x...'} 
-              networkName="Camp Testnet" 
-              // blockExplorerUrl="https://testnet.campscan.io" // Example
+            <ContractInfo
+              tippingAddress={tippingContractReadAddress}
+              creatorRegistryAddress={creatorRegistryContractReadAddress}
+              networkName="Basecamp Testnet"
+              blockExplorerUrl="https://basecamp.cloud.blockscout.com"
             />
             <div className="w-full max-w-md p-6 bg-white/70 backdrop-blur-md shadow-lg rounded-xl border border-white/30 glass-effect">
               <h3 className="text-lg font-semibold mb-4 text-center gradient-text">How It Works</h3>

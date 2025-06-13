@@ -23,14 +23,6 @@ const walletConnectProjectIdFromEnv = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJ
 // Log the projectId to the server console during startup/build
 console.log("[wagmiConfig] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID from env:", walletConnectProjectIdFromEnv);
 
-if (!walletConnectProjectIdFromEnv) {
-  console.warn(
-    '[wagmiConfig] WalletConnect Project ID is not set in .env.local. Please set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID.'
-  );
-  // Consider if you want to throw an error here in development to make it more obvious
-  // throw new Error("[wagmiConfig] WalletConnect Project ID is essential and not set.");
-}
-
 const config = getDefaultConfig({
   appName: 'Micro-Tipping Platform',
   // Use the variable directly, and handle the undefined case if necessary (though warning is good)

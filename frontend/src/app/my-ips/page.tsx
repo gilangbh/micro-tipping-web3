@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useConnect, useDisconnect, useBalance } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 import contractAddressData from '@/generated/contract-address.json';
-import creatorRegistryAbi from '@/abi/CreatorRegistry.json';
-// import Header from '@/components/Header'; // Header is likely in a layout component now
+import creatorRegistryAbi from '@/generated/abi/CreatorRegistry.json';
+import Header from '@/components/Header'; // Import Header component
 import { Button } from '@/components/ui/button';
 // import { Input } from '@/components/ui/input'; // For Register New IP form, if added here
 // import { Label } from '@/components/ui/label'; // For Register New IP form
@@ -27,7 +28,11 @@ import { Label } from "@/components/ui/label";
 
 export default function MyIpsPage() {
   const { address, isConnected } = useAccount();
+  const { connectors, connect, isPending: isWagmiConnecting } = useConnect();
+  const { disconnect, isPending: isDisconnecting } = useDisconnect();
+  const { data: balance } = useBalance({ address });
   const { toast } = useToast();
+  const { openConnectModal } = useConnectModal();
   const creatorRegistryAddress = contractAddressData.creatorRegistryAddress as `0x${string}`;
 
   // const [updateModal, setUpdateModal] = useState<UpdateModalState>({ isOpen: false, ipIdToUpdate: null, currentMetadataUrl: null });
@@ -71,6 +76,36 @@ export default function MyIpsPage() {
       refetchUserIpIds();
     }
   }, [isConnected, address, refetchUserIpIds]);
+
+  // Wallet connection handlers
+  const handleConnect = async () => {
+    console.log("[MyIPs ConnectWallet] Attempting to open RainbowKit connect modal...");
+    if (openConnectModal) {
+      openConnectModal();
+    } else {
+      console.error("[MyIPs ConnectWallet] RainbowKit openConnectModal is not available.");
+      toast({
+        title: "Connection Unavailable",
+        description: "Wallet connection modal could not be opened. Please try refreshing.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDisconnect = () => {
+    console.log("[MyIPs DisconnectWallet] Attempting to disconnect...");
+    try {
+      disconnect();
+      console.log("[MyIPs DisconnectWallet] Disconnect call successful.");
+    } catch (error) {
+      console.error("[MyIPs DisconnectWallet] Error during disconnect:", error);
+      toast({
+        title: "Disconnection Error",
+        description: error instanceof Error ? error.message : "Failed to disconnect.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Effect for CreatorRegistry transaction status (Register IP)
   useEffect(() => {
@@ -152,8 +187,16 @@ export default function MyIpsPage() {
 
   return (
     <>
-      {/* Header is usually part of a Layout component wrapping children */}
-      <div className="container mx-auto p-4 md:p-8">
+      <Header
+        isConnected={isConnected}
+        isConnecting={isWagmiConnecting}
+        address={address}
+        balance={balance?.formatted}
+        onConnect={handleConnect}
+        onDisconnect={handleDisconnect}
+      />
+      <div className="w-full space-y-12 mt-8"> {/* Added mt-8 to give space below sticky header */}
+        <div className="container mx-auto p-4 md:p-8">
         <div className="mb-6 flex justify-between items-center">
             <Link href="/" passHref legacyBehavior>
                 <Button variant="outline" className="text-purple-700 border-purple-300 hover:bg-purple-50">
@@ -285,6 +328,7 @@ export default function MyIpsPage() {
 
         {/* TODO: Modal for Updating IP Metadata */}
         {/* {updateModal.isOpen && <UpdateIpModal ipId={updateModal.ipIdToUpdate!} currentUrl={updateModal.currentMetadataUrl!} onClose={() => setUpdateModal({isOpen: false, ipIdToUpdate: null, currentMetadataUrl: null})} /> } */}
+        </div>
       </div>
     </>
   );
