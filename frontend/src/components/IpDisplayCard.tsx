@@ -2,9 +2,12 @@
 
 import React from 'react';
 import { useReadContract } from 'wagmi';
-import creatorRegistryAbi from '@/abi/CreatorRegistry.json';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from "./ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { ethers } from "ethers";
+import creatorRegistryAbi from '@/generated/abi/CreatorRegistry.json';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useEffect, useState } from "react";
 import { Edit3, AlertCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 

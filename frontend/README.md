@@ -1,14 +1,20 @@
-# Frontend - Next.js DApp (Micro-Tipping)
+# Frontend - Next.js DApp (Micro-Tipping & IP Registry)
 
-This directory contains the Next.js frontend application for the micro-tipping platform. It allows users to connect their wallets, interact with the `Tipping.sol` smart contract on the Camp Testnet, and send tips.
+This directory contains the Next.js frontend application for the micro-tipping and IP registry platform. It allows users to connect their wallets, interact with the `Tipping.sol` and `CreatorRegistry.sol` smart contracts on the Camp Testnet, send tips, and manage their registered intellectual property.
 
 ## Features
 
 *   **Wallet Connection**: Uses RainbowKit and Wagmi for connecting to Ethereum wallets (e.g., MetaMask).
 *   **Network**: Configured for Camp Testnet (Basecamp).
-*   **Tipping Interface**: Allows users to specify a recipient address and amount to send a tip.
-*   **Contract Interaction**: Communicates with the deployed `Tipping.sol` smart contract to execute tips.
-*   **UI**: Built with Next.js (App Router), React, and Tailwind CSS.
+*   **Tipping Interface (`/`)**: Allows users to specify a recipient address, amount, message, and optional `ipId` to send a tip via `Tipping.sol`.
+*   **Creator IP Portfolio (`/my-ips`)**: 
+    *   Displays a list of IPs registered by the connected user via `CreatorRegistry.sol`.
+    *   Provides a modal form for creators to register new IPs on-chain.
+*   **Contract Information Display (`ContractInfo.tsx`)**: A component that displays the deployed addresses for both `Tipping.sol` and `CreatorRegistry.sol`, network name, and provides direct links to view them on a block explorer.
+*   **Contract Interaction**: Communicates with the deployed `Tipping.sol` and `CreatorRegistry.sol` smart contracts.
+*   **UI**: Built with Next.js (App Router), React, Tailwind CSS, and shadcn components (e.g., Card, Dialog, Button, Toast).
+*   **Real-time Feedback**: Toasts and status messages for transaction lifecycle.
+*   **Input Validation**: For all user input forms.
 
 ## Prerequisites
 
@@ -42,17 +48,21 @@ This directory contains the Next.js frontend application for the micro-tipping p
     ```
     *   Replace `YOUR_WALLETCONNECT_PROJECT_ID` with your actual ID.
 
-4.  **Smart Contract Address Configuration:**
-    The smart contract address is automatically read from `src/generated/contract-address.json`. This file is created/updated by the smart contract deployment script located in the `web3/` directory (`web3/scripts/deploy.js`).
+4.  **Smart Contract Configuration:**
+    The smart contract addresses are automatically read from `src/generated/contract-address.json`. This file is created/updated by the smart contract deployment scripts located in the `web3/` directory (`web3/scripts/deploy_tipping.js` and `web3/scripts/deploy_creator_registry.js`).
 
-    **Ensure you have run the deployment script from the `web3/` directory successfully before starting the frontend.** If the file is missing or incorrect, the DApp will not be able to connect to the contract.
+    **Ensure you have run the deployment scripts from the `web3/` directory successfully before starting the frontend.** If the file is missing or incorrect, the DApp will not be able to connect to the contracts.
 
-    The address is used in `frontend/src/app/page.tsx`:
+    The addresses are used in the frontend components, for example:
     ```typescript
     import contractAddressData from '@/generated/contract-address.json';
     // ...
-    const contractAddress = contractAddressData.address;
+    const tippingAddress = contractAddressData.tippingAddress;
+    const creatorRegistryAddress = contractAddressData.creatorRegistryAddress;
     ```
+
+5.  **Smart Contract ABIs:**
+    Ensure `src/generated/abi/Tipping.json` and `src/generated/abi/CreatorRegistry.json` are present and up-to-date. These are automatically copied from the `web3/artifacts/contracts/...` directory into `src/generated/abi/` by the web3 deployment scripts.
 
 ## Running the Development Server
 
@@ -64,46 +74,14 @@ This directory contains the Next.js frontend application for the micro-tipping p
 
 ## Key Files & Structure
 
-*   **`src/app/page.tsx`**: The main page component. Contains the UI for wallet connection, displaying wallet/contract info, and the tipping form.
+*   **`src/app/page.tsx`**: The main tipping page component. Contains the UI for wallet connection and the tipping form.
+*   **`src/app/my-ips/page.tsx`**: The Creator IP Portfolio page. Displays registered IPs and includes a modal form for registering new IPs.
+*   **`src/components/IpDisplayCard.tsx`**: Component used on the `/my-ips` page to display details of a single registered IP.
+*   **`src/components/Header.tsx`**: Global header component with wallet connection status and navigation links (including to `/my-ips`).
+*   **`src/components/ContractInfo.tsx`**: Component to display deployed contract addresses and block explorer links.
 *   **`src/app/layout.tsx`**: The main layout component, wraps the application with global providers.
 *   **`src/app/providers.tsx`**: Configures and provides `WagmiProvider` and `RainbowKitProvider` for wallet connectivity. This is where the Camp Testnet (Basecamp) chain is defined for Wagmi.
-*   **`src/generated/contract-address.json`**: This file is automatically generated by the smart contract deployment script. It contains the address of the deployed `Tipping.sol` contract. **Do not edit this file manually.** It should be in your `.gitignore`.
-*   **`next.config.js`**: Next.js configuration file (using JavaScript module format).
-*   **`tailwind.config.ts`**: Tailwind CSS configuration.
-*   **`package.json`**: Lists dependencies and scripts.
-    *   `dev` script: `next dev` (note: `--turbopack` was removed due to issues).
-
-## Wallet and Network Configuration (`providers.tsx`)
-
-The Camp Testnet (Basecamp) is configured in `src/app/providers.tsx`:
-
-```typescript
-import { mainnet, sepolia } from 'wagmi/chains'; // Default chains
-import { defineChain } from 'viem';
-
-export const basecamp = defineChain({
-  id: 123420001114,
-  name: 'Basecamp Testnet',
-  nativeCurrency: { name: 'CAMP', symbol: 'CAMP', decimals: 18 },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc.basecamp.t.raas.gelato.cloud'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Blockscout', url: 'https://basecamp.cloud.blockscout.com' },
-  },
-});
-
-// ... Wagmi and RainbowKit setup uses `basecamp` along with other chains.
-```
-
-## Troubleshooting
-
-*   **Hydration Errors**: The `isMounted` pattern is used in `page.tsx` to prevent hydration errors with client-side only components like RainbowKit's `ConnectButton`. If you add more client-side specific components, ensure they are only rendered after the component has mounted.
-*   **`Error: Configuring Next.js via 'next.config.ts' is not supported...`**: Fixed by renaming `next.config.ts` to `next.config.js` and converting its content to plain JavaScript (`module.exports`).
-*   **`SyntaxError: Unexpected token '{'` in `next.config.js`**: Caused by ES module `import type`. Convert `next.config.js` to use CommonJS `require()` or plain JS object for `module.exports`.
-*   **`Module not found: Can't resolve 'pino-pretty'`**: This was a transient dependency issue. Fixed by `npm install --save-dev pino-pretty`.
-*   **React Version Conflicts**: If installing new Web3 libraries, be mindful of React version requirements. This project was pinned to React 18 due to `@campnetwork/sdk`.
-
-This frontend provides the user interface to interact with your deployed tipping smart contract.
+*   **`src/generated/contract-address.json`**: This file is automatically generated by the smart contract deployment scripts. It contains the addresses of the deployed `Tipping.sol` (as `tippingAddress`) and `CreatorRegistry.sol` (as `creatorRegistryAddress`) contracts. **Do not edit this file manually.**
+*   **`src/generated/abi/`**: Contains JSON ABI files for the smart contracts (e.g., `Tipping.json`, `CreatorRegistry.json`), also auto-generated by deployment scripts.
+*   **`next.config.js`**: Next.js configuration file.
+*   **`tailwind.config.ts`

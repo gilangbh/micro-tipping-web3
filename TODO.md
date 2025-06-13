@@ -26,13 +26,21 @@ This file tracks pending tasks, future enhancements, and known issues for the Mi
 - [x] **Phase 2: `CreatorRegistry.sol` and Frontend IP Display**
     - [x] **Smart Contracts (`web3/`):**
         - [x] Create and deploy `CreatorRegistry.sol` (for creator IP portfolio & verification).
-    - [ ] **Frontend (`frontend/`):**
+    - [x] **Frontend (`frontend/`):**
         - [x] Add `CreatorRegistry.json` ABI.
-        - [ ] New page/section for creators to manage their IP portfolio.
-        - [ ] Modify `page.tsx`/`CreatorProfilePage.tsx`: Fetch/display IP portfolio & verification status.
+        - [x] New page/section for creators to manage their IP portfolio.
+        - [x] Modify `page.tsx`/`CreatorProfilePage.tsx`: Fetch/display IP portfolio & verification status.
     - [ ] **Backend (`backend/` - optional for this phase):**
-        - [ ] Plan/start schema for `creators` and `registered_ips`.
-        - [ ] Plan API endpoint to cache/serve `CreatorRegistry.sol` data.
+        - [ ] **Schema (Supabase):**
+            - [ ] Create `creators` table in Supabase (columns: `id` UUID PK, `wallet_address` TEXT unique not null, `name` TEXT, `bio` TEXT, `is_verified` BOOLEAN default false, `created_at` TIMESTAMPTZ default now(), `updated_at` TIMESTAMPTZ default now()).
+            - [ ] Create `registered_ips` table in Supabase (columns: `id` UUID PK, `ip_id_onchain` TEXT unique not null, `creator_id` UUID FK to creators.id, `name` TEXT not null, `description` TEXT, `metadata_url` TEXT, `tags` TEXT[], `registered_onchain_at` TIMESTAMPTZ, `cached_at` TIMESTAMPTZ default now(), `updated_at` TIMESTAMPTZ default now()).
+        - [ ] **API Endpoint (Node.js/Express & Supabase):**
+            - [ ] Implement `GET /api/creators/{wallet_address}` endpoint.
+            - [ ] Implement `GET /api/ips/{ip_id_onchain}` endpoint.
+            - [ ] Implement `GET /api/ips` endpoint (with filtering/pagination).
+        - [ ] **Cache Update Script (Node.js & Ethers.js):**
+            - [x] Develop script for initial population of `creators` and `registered_ips` from `CreatorRegistry.sol`.
+            - [x] Implement periodic refresh logic for the script to keep cache updated.
     - [ ] **Testing**: Creator registration, IP addition, tipper viewing portfolio and tipping specific IP.
 - [ ] **Phase 3: Backend Integration & Polish**
     - [ ] **Backend (`backend/`):**

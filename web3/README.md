@@ -4,18 +4,22 @@ This directory contains the Solidity smart contracts, deployment scripts, and Ha
 
 ## Overview
 
-*   **Contract**: `contracts/Tipping.sol`
-    *   Allows users to send native currency (CAMP) tips to an address.
-    *   Emits a `TipSent` event for each successful tip.
-    *   Includes a function to retrieve all tips sent by a specific user (though this is primarily for on-chain record, frontend/backend will likely handle display of recent/aggregated tips).
-    *   Uses OpenZeppelin's `Ownable` for basic access control (e.g., if you wanted to add pausable functionality later, managed by the owner).
-*   **Hardhat**: Used for compiling, testing, and deploying the smart contract.
+*   **Contracts**:
+    *   **`contracts/Tipping.sol`**: Allows users to send native currency (CAMP) tips to an address. Emits a `TipSent` event for each successful tip. Includes functionality for contextual tipping via an `ipId`.
+    *   **`contracts/CreatorRegistry.sol`**: Enables creators to register their intellectual property (IPs) on-chain, associating them with an IP name and metadata URL. Generates unique IP IDs and allows for owner-based verification.
+*   **Hardhat**: Used for compiling, testing, and deploying the smart contracts.
 *   **Network**: Configured for Camp Testnet (Basecamp).
 
-## Deployed Contract Address
+## Deployed Contract Addresses
 
-*   The deployed contract address for `Tipping.sol` on Camp Testnet (Basecamp) will be saved to `frontend/src/generated/contract-address.json` after running the deployment script. The script will also log it to the console.
-    *   _Note: This address is generated during each deployment. The frontend reads from this file automatically._
+*   The deployed contract addresses for `Tipping.sol` (as `tippingAddress`) and `CreatorRegistry.sol` (as `creatorRegistryAddress`) on Camp Testnet (Basecamp) will be saved to:
+    *   `../../frontend/src/generated/contract-address.json`
+    *   `../../backend/src/generated/contract-address.json`
+*   Additionally, the ABI JSON files (e.g., `Tipping.json`, `CreatorRegistry.json`) will be copied to:
+    *   `../../frontend/src/generated/abi/`
+    *   `../../backend/src/generated/abi/`
+*   This process is handled automatically by the respective deployment scripts (`scripts/deploy_*.js`). The scripts will also log the deployed addresses to the console.
+    *   _Note: These addresses and ABIs are generated during each deployment. The frontend and backend applications read from these generated files automatically._
 
 ## Prerequisites
 
@@ -64,13 +68,15 @@ This directory contains the Solidity smart contracts, deployment scripts, and Ha
     npx hardhat test
     ```
 
-*   **Deploy Contract:**
-    The `scripts/deploy.js` script handles the deployment of `Tipping.sol`.
+*   **Deploy Contracts:**
+    *   The `scripts/deploy_tipping.js` script handles the deployment of `Tipping.sol`.
+    *   The `scripts/deploy_creator_registry.js` script handles the deployment of `CreatorRegistry.sol`.
     ```bash
-    npx hardhat run scripts/deploy.js --network campTestnet
+    npx hardhat run scripts/deploy_tipping.js --network campTestnet
+    npx hardhat run scripts/deploy_creator_registry.js --network campTestnet
     ```
     *   The `--network campTestnet` flag tells Hardhat to use the network configuration defined in `hardhat.config.js`.
-    *   The script will log the deployed contract address to the console and save it to `../../frontend/src/generated/contract-address.json`.
+    *   The scripts will log the deployed contract addresses to the console and save them, along with their ABIs, to the `generated/` (and `generated/abi/`) directories within both the `frontend/` and `backend/` project folders, using keys like `tippingAddress` and `creatorRegistryAddress` in the `contract-address.json` file.
 
 ## `hardhat.config.js`
 
@@ -78,13 +84,26 @@ This file is configured for:
 *   Solidity compiler version `0.8.24`.
 *   The `campTestnet` network, using the `RPC_URL` and `PRIVATE_KEY` from the `.env` file.
 
-## Contract Details (`Tipping.sol`)
+## Contract Details
 
-*   **`tipNative(address payable _recipient, string calldata _message)`**: Allows a user to send native currency (ETH/CAMP) along with a message. Emits `TipSent`.
-*   **`tipToken(address _tokenAddress, address _recipient, uint256 _amount, string calldata _message)`**: (Currently not the primary focus but included) Allows a user to send ERC20 tokens. Requires prior approval of the token for the contract. Emits `TipSent`.
-*   **`getTipsByUser(address _user)`**: Returns an array of all tips (address and amount) sent by a particular user.
-*   **`TipSent` Event**: `event TipSent(address indexed tipper, address indexed recipient, address token, uint256 amount, string message, uint256 timestamp);`
-    *   `token` will be `address(0)` for native tips.
+### `Tipping.sol`
+
+*   **`tipNative(address payable _recipient, string calldata _message, bytes32 _ipId)`**: Allows a user to send native currency (ETH/CAMP) along with a message and an IP identifier. Emits `TipSent`.
+*   **`tipToken(address _tokenAddress, address _recipient, uint256 _amount, string calldata _message)`**: (Currently not the primary focus but included) Allows a user to send ERC20 tokens. Requires prior approval of the token for the contract. Emits `TipSent` with a default `ipId` of `bytes32(0)`.
+*   **`TipSent` Event**: `event TipSent(address indexed tipper, address indexed recipient, address tokenAddress, uint256 amount, string message, bytes32 ipId, uint256 timestamp);`
+    *   `tokenAddress` will be `address(0)` for native tips.
+
+### `CreatorRegistry.sol`
+
+*   **`registerIp(string calldata _ipName, string calldata _ipMetadataUrl)`**: Allows a creator to register an IP. Generates a unique `ipId`. Emits `IpRegistered`.
+*   **`updateIpMetadata(bytes32 _ipId, string calldata _newIpMetadataUrl)`**: Allows the original creator of an IP to update its metadata URL. Emits `IpMetadataUpdated`.
+*   **`setIpVerificationStatus(bytes32 _ipId, bool _isVerified)`**: Allows the contract owner to set the verification status of an IP. Emits `IpVerificationStatusChanged`.
+*   **`getIpDetails(bytes32 _ipId)`**: Returns a struct `RegisteredIp` containing details for a given `ipId`.
+*   **`getCreatorIpList(address _creator)`**: Returns an array of `ipId`s registered by a specific creator.
+*   **Events**:
+    *   `IpRegistered(address indexed creator, bytes32 indexed ipId, string ipName, string ipMetadataUrl, uint256 creationTimestamp)`
+    *   `IpMetadataUpdated(bytes32 indexed ipId, string newIpMetadataUrl)`
+    *   `IpVerificationStatusChanged(bytes32 indexed ipId, bool isVerified)`
 
 ## Notes & Troubleshooting
 

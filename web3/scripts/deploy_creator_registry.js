@@ -2,6 +2,44 @@ const hre = require("hardhat");
 const fs = require('fs');
 const path = require('path');
 
+// Helper function to ensure a directory exists
+function ensureDirExists(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+    console.log(`Created directory: ${dirPath}`);
+  }
+}
+
+// Helper function to update and save contract addresses to a JSON file
+function updateContractAddresses(filePath, contractKey, newAddress) {
+  let addresses = {};
+  if (fs.existsSync(filePath)) {
+    try {
+      addresses = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch (e) {
+      console.warn(`Could not parse existing address file at ${filePath}. It will be overwritten. Error: ${e.message}`);
+      addresses = {}; // Reset if parsing fails
+    }
+  }
+  addresses[contractKey] = newAddress;
+  fs.writeFileSync(filePath, JSON.stringify(addresses, null, 2));
+  console.log(`Saved/Updated ${contractKey} to ${newAddress} in ${filePath}`);
+}
+
+// Helper function to copy ABI file
+function copyAbiFile(sourcePath, destPath) {
+  try {
+    if (fs.existsSync(sourcePath)) {
+      fs.copyFileSync(sourcePath, destPath);
+      console.log(`Copied ABI from ${sourcePath} to ${destPath}`);
+    } else {
+      console.error(`Source ABI file not found at ${sourcePath}. Cannot copy.`);
+    }
+  } catch (e) {
+    console.error(`Error copying ABI from ${sourcePath} to ${destPath}: ${e.message}`);
+  }
+}
+
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
 
@@ -10,34 +48,43 @@ async function main() {
 
   const CreatorRegistry = await hre.ethers.getContractFactory("CreatorRegistry");
   const creatorRegistryContract = await CreatorRegistry.deploy();
-
   await creatorRegistryContract.waitForDeployment();
-
   const contractAddress = await creatorRegistryContract.getAddress();
+
   console.log("CreatorRegistry contract deployed to:", contractAddress);
 
-  // Save the contract address to a file in the frontend directory
-  const frontendDataPath = path.join(__dirname, '..', '..', 'frontend', 'src', 'generated');
-  const addressFilePath = path.join(frontendDataPath, 'contract-address.json');
+  // --- Define paths ---
+  const contractKeyName = 'creatorRegistryAddress';
+  const abiFileName = 'CreatorRegistry.json';
 
-  if (!fs.existsSync(frontendDataPath)){
-    fs.mkdirSync(frontendDataPath, { recursive: true });
-  }
+  // Frontend paths
+  const frontendGeneratedDataPath = path.join(__dirname, '..', '..', 'frontend', 'src', 'generated');
+  const frontendAddressFilePath = path.join(frontendGeneratedDataPath, 'contract-address.json');
+  const frontendAbiDir = path.join(frontendGeneratedDataPath, 'abi'); // New ABI directory path
+  const frontendAbiFilePath = path.join(frontendAbiDir, abiFileName);    // New ABI file path
 
-  let addresses = {};
-  if (fs.existsSync(addressFilePath)) {
-    try {
-      addresses = JSON.parse(fs.readFileSync(addressFilePath, 'utf8'));
-    } catch (e) {
-      console.warn("Could not parse existing contract-address.json, will overwrite:", e);
-      addresses = {}; // Reset if parsing fails
-    }
-  }
+  // Backend paths
+  const backendGeneratedDataPath = path.join(__dirname, '..', '..', 'backend', 'src', 'generated');
+  const backendAddressFilePath = path.join(backendGeneratedDataPath, 'contract-address.json');
+  const backendAbiDir = path.join(backendGeneratedDataPath, 'abi');   // New ABI directory path
+  const backendAbiFilePath = path.join(backendAbiDir, abiFileName);      // New ABI file path
+  
+  // Source ABI path from Hardhat artifacts
+  const sourceAbiPath = path.join(__dirname, '..', 'artifacts', 'contracts', 'CreatorRegistry.sol', abiFileName);
 
-  addresses.creatorRegistryAddress = contractAddress; // Using a specific key for this contract
+  // --- Save artifacts for Frontend ---
+  ensureDirExists(frontendGeneratedDataPath); // Ensures .../generated/ exists
+  updateContractAddresses(frontendAddressFilePath, contractKeyName, contractAddress);
+  ensureDirExists(frontendAbiDir); // Ensures .../generated/abi/ exists
+  copyAbiFile(sourceAbiPath, frontendAbiFilePath);
 
-  fs.writeFileSync(addressFilePath, JSON.stringify(addresses, null, 2));
-  console.log(`CreatorRegistry contract address saved to ${addressFilePath}`);
+  // --- Save artifacts for Backend ---
+  ensureDirExists(backendGeneratedDataPath); // Ensures .../generated/ exists
+  updateContractAddresses(backendAddressFilePath, contractKeyName, contractAddress);
+  ensureDirExists(backendAbiDir); // Ensures .../generated/abi/ exists
+  copyAbiFile(sourceAbiPath, backendAbiFilePath);
+
+  console.log("Deployment and artifact saving complete.");
 }
 
 main()
